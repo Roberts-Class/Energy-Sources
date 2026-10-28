@@ -237,7 +237,6 @@
         
         <!-- ================= CATEGORY 1: LEARN ================= -->
         <section id="sec-learn" class="w-full h-full flex flex-col items-center justify-between py-1 transition-all duration-500 absolute inset-0 p-3 sm:p-5 max-w-5xl mx-auto">
-            <!-- (Learn Tab content remains mostly the same, omitted for brevity but intact in the generated file) -->
             <div class="text-center w-full flex-none">
                 <span id="learn-category-badge" class="inline-block px-3 py-1 rounded-full text-xs font-bold text-white shadow-md mb-1 badge-solar uppercase tracking-wider">Renewable</span>
                 <h2 class="text-xl sm:text-2xl font-black text-white glow-text">Flashcard Explorer</h2>
@@ -255,10 +254,9 @@
                         <img id="learn-img" src="" alt="Vocabulary Image" class="max-h-40 sm:max-h-52 object-contain drop-shadow-2xl transition-all duration-300 transform group-hover:scale-105" 
                              onerror="this.src='https://placehold.co/400x300/e2e8f0/1e293b?text='+encodeURIComponent(this.alt)">
                     </div>
-                    <div class="text-center w-full bg-slate-50/80 backdrop-blur-sm p-4 rounded-2xl border border-slate-200/80 shadow-inner">
+                    <div class="text-center w-full bg-slate-50/80 backdrop-blur-sm p-4 rounded-2xl border border-slate-200/80 shadow-inner flex flex-col items-center justify-center">
                         <h3 id="learn-en" class="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight leading-tight"></h3>
                         <p id="learn-syllables" class="text-sm sm:text-base font-bold text-slate-500 tracking-[0.1em] mt-1"></p>
-                        <p id="learn-zh" class="text-lg sm:text-xl text-blue-600 font-extrabold mt-0.5"></p>
                     </div>
                 </div>
             </div>
@@ -294,15 +292,15 @@
                 <h3 class="text-lg font-black text-slate-700 mb-4 text-center">Student Identification</h3>
                 <form id="quiz-login-form" class="w-full flex flex-col gap-3">
                     <select id="quiz-section-input" required class="w-full p-3 rounded-xl bg-slate-50 border-2 border-slate-200 text-slate-800 font-bold outline-none focus:border-pink-500 focus:bg-white transition-all shadow-inner text-sm">
-                        <option value="" disabled selected>Select Section (班級)...</option>
+                        <option value="" disabled selected>Select Section...</option>
                         <option value="801">Class 801</option>
                         <option value="802">Class 802</option>
                         <option value="803">Class 803</option>
                         <option value="804">Class 804</option>
                         <option value="805">Class 805</option>
                     </select>
-                    <input type="number" id="quiz-seat-input" required placeholder="Seat Number (座號) e.g. 1-50" min="1" max="50" class="w-full p-3 rounded-xl bg-slate-50 border-2 border-slate-200 text-slate-800 font-bold outline-none focus:border-pink-500 focus:bg-white transition-all shadow-inner text-sm">
-                    <input type="text" id="quiz-name-input" required placeholder="Name (姓名)" class="w-full p-3 rounded-xl bg-slate-50 border-2 border-slate-200 text-slate-800 font-bold outline-none focus:border-pink-500 focus:bg-white transition-all shadow-inner text-sm">
+                    <input type="number" id="quiz-seat-input" required placeholder="Seat Number e.g. 1-50" min="1" max="50" class="w-full p-3 rounded-xl bg-slate-50 border-2 border-slate-200 text-slate-800 font-bold outline-none focus:border-pink-500 focus:bg-white transition-all shadow-inner text-sm">
+                    <input type="text" id="quiz-name-input" required placeholder="Name" class="w-full p-3 rounded-xl bg-slate-50 border-2 border-slate-200 text-slate-800 font-bold outline-none focus:border-pink-500 focus:bg-white transition-all shadow-inner text-sm">
                     
                     <button type="submit" class="mt-2 w-full py-3.5 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-400 hover:to-rose-500 text-white font-black rounded-xl shadow-lg shadow-pink-500/30 transition-all transform hover:scale-[1.02] active:scale-95 uppercase tracking-wider text-sm flex justify-center items-center gap-2">
                         <span>Start Mission</span> <i class="fa-solid fa-rocket"></i>
@@ -453,21 +451,21 @@
     <script>
         // --- DATA ---
         const vocabData = [
-            { en: "Solar energy", zh: "太陽能", img: "images/solar_energy.png", category: "badge-solar", syllables: "So·lar en·er·gy" },
-            { en: "Wind energy", zh: "風力能", img: "images/wind_energy.png", category: "badge-wind", syllables: "Wind en·er·gy" },
-            { en: "Hydropower", zh: "水力能", img: "images/hydropower.png", category: "badge-hydro", syllables: "Hy·dro·pow·er" },
-            { en: "Geothermal energy", zh: "地熱能", img: "images/geothermal_energy.png", category: "badge-geo", syllables: "Ge·o·ther·mal en·er·gy" },
-            { en: "Biomass energy", zh: "生質能", img: "images/biomass_energy.png", category: "badge-bio", syllables: "Bi·o·mass en·er·gy" },
-            { en: "Non-renewable resource", zh: "不可再生資源", img: "images/non_renewable_resource.png", category: "badge-fossil", syllables: "Non-re·new·a·ble re·source" },
-            { en: "Fossil fuels", zh: "化石燃料", img: "images/fossil_fuels.png", category: "badge-fossil", syllables: "Fos·sil fu·els" },
-            { en: "Coal", zh: "煤炭", img: "images/coal.png", category: "badge-fossil", syllables: "Coal" },
-            { en: "Oil", zh: "石油", img: "images/oil.png", category: "badge-fossil", syllables: "Oil" },
-            { en: "Natural gas", zh: "天然氣", img: "images/natural_gas.png", category: "badge-fossil", syllables: "Nat·u·ral gas" },
-            { en: "Nuclear energy", zh: "核能", img: "images/nuclear_energy.png", category: "badge-nuclear", syllables: "Nu·cle·ar en·er·gy" },
-            { en: "Offshore wind power", zh: "離岸風電", img: "images/offshore_wind_power.png", category: "badge-wind", syllables: "Off·shore wind pow·er" },
-            { en: "Offshore wind farm", zh: "離岸風力發電廠", img: "images/offshore_wind_farm.png", category: "badge-wind", syllables: "Off·shore wind farm" },
-            { en: "Offshore wind turbine", zh: "離岸風力機", img: "images/offshore_wind_turbine.png", category: "badge-wind", syllables: "Off·shore wind tur·bine" },
-            { en: "Onshore wind power", zh: "陸上風電", img: "images/onshore_wind_power.png", category: "badge-wind", syllables: "On·shore wind pow·er" }
+            { en: "Solar energy", img: "images/solar_energy.png", category: "badge-solar", syllables: "So·lar en·er·gy" },
+            { en: "Wind energy", img: "images/wind_energy.png", category: "badge-wind", syllables: "Wind en·er·gy" },
+            { en: "Hydropower", img: "images/hydropower.png", category: "badge-hydro", syllables: "Hy·dro·pow·er" },
+            { en: "Geothermal energy", img: "images/geothermal_energy.png", category: "badge-geo", syllables: "Ge·o·ther·mal en·er·gy" },
+            { en: "Biomass energy", img: "images/biomass_energy.png", category: "badge-bio", syllables: "Bi·o·mass en·er·gy" },
+            { en: "Non-renewable resource", img: "images/non_renewable_resource.png", category: "badge-fossil", syllables: "Non-re·new·a·ble re·source" },
+            { en: "Fossil fuels", img: "images/fossil_fuels.png", category: "badge-fossil", syllables: "Fos·sil fu·els" },
+            { en: "Coal", img: "images/coal.png", category: "badge-fossil", syllables: "Coal" },
+            { en: "Oil", img: "images/oil.png", category: "badge-fossil", syllables: "Oil" },
+            { en: "Natural gas", img: "images/natural_gas.png", category: "badge-fossil", syllables: "Nat·u·ral gas" },
+            { en: "Nuclear energy", img: "images/nuclear_energy.png", category: "badge-nuclear", syllables: "Nu·cle·ar en·er·gy" },
+            { en: "Offshore wind power", img: "images/offshore_wind_power.png", category: "badge-wind", syllables: "Off·shore wind pow·er" },
+            { en: "Offshore wind farm", img: "images/offshore_wind_farm.png", category: "badge-wind", syllables: "Off·shore wind farm" },
+            { en: "Offshore wind turbine", img: "images/offshore_wind_turbine.png", category: "badge-wind", syllables: "Off·shore wind tur·bine" },
+            { en: "Onshore wind power", img: "images/onshore_wind_power.png", category: "badge-wind", syllables: "On·shore wind pow·er" }
         ];
 
         let currentTab = 'learn';
@@ -591,7 +589,6 @@
             setTimeout(() => {
                 document.getElementById('learn-en').innerText = word.en;
                 document.getElementById('learn-syllables').innerText = word.syllables;
-                document.getElementById('learn-zh').innerText = word.zh;
                 
                 const img = document.getElementById('learn-img');
                 img.src = word.img;
@@ -636,7 +633,7 @@
             window.speechSynthesis.speak(utterance);
         }
 
-        // --- CATEGORY 2: MCQ QUIZ LOGIC (Unchanged functionality) ---
+        // --- CATEGORY 2: MCQ QUIZ LOGIC ---
         let mcqQuestions = [];
         let mcqCurrentIndex = 0;
         let mcqScore = 0;
@@ -691,8 +688,8 @@
             const btn = document.getElementById(`quiz-opt-${idx}`);
             
             if (selected.en === currentQ.en) {
-                playSfx('click'); // Regular click for correct logic handled below
-                setTimeout(() => playSfx('match'), 50); // slight delay to replace
+                playSfx('click');
+                setTimeout(() => playSfx('match'), 50); 
                 btn.classList.add('!bg-green-100', '!border-green-500', '!text-green-700');
                 mcqScore++;
             } else {
@@ -728,8 +725,8 @@
             document.getElementById('quiz-login-form').reset();
         }
 
-        // --- CATEGORY 3: MATCHING GAME LOGIC (NEW GRID LAYOUT) ---
-        const pairsPerRound = 5; // 5 pairs = 10 cards total in grid
+        // --- CATEGORY 3: MATCHING GAME LOGIC ---
+        const pairsPerRound = 5; 
         let currentRound = 0;
         let totalRounds = Math.ceil(vocabData.length / pairsPerRound);
         let gameDeck = [];
@@ -782,28 +779,26 @@
 
             let roundSubset = gameDeck.slice(roundIndex * pairsPerRound, (roundIndex + 1) * pairsPerRound);
             
-            // Build mixed array of words and pictures
             let gridItems = [];
             roundSubset.forEach((item, index) => {
-                gridItems.push({ type: 'word', id: item.en, en: item.en, zh: item.zh, uid: `${index}-w` });
+                gridItems.push({ type: 'word', id: item.en, en: item.en, uid: `${index}-w` });
                 gridItems.push({ type: 'pic', id: item.en, img: item.img, en: item.en, uid: `${index}-p` });
             });
 
             gridItems = shuffle(gridItems);
 
-            // Render single grid items
             gridItems.forEach(item => {
                 const btn = document.createElement('button');
                 btn.className = "game-card w-full h-[22vh] min-h-[100px] sm:min-h-[180px] md:h-[30vh] max-h-[320px] glass-card rounded-3xl flex flex-col items-center justify-center transition-all duration-300 border-2 sm:border-4 border-white/60 shadow-lg hover:scale-[1.03] active:scale-95 overflow-hidden p-3 sm:p-4 relative group";
                 
                 if (item.type === 'word') {
-                    btn.innerHTML = `<span class="font-black text-slate-800 text-[15px] sm:text-xl md:text-2xl leading-tight text-center mb-1 sm:mb-2 drop-shadow-sm pointer-events-none">${item.en}</span><span class="text-[12px] sm:text-base md:text-lg text-blue-600 font-extrabold mt-0.5 pointer-events-none">${item.zh}</span>`;
+                    btn.innerHTML = `<span class="font-black text-slate-800 text-[15px] sm:text-xl md:text-2xl leading-tight text-center drop-shadow-sm pointer-events-none">${item.en}</span>`;
                 } else {
                     btn.innerHTML = `<img src="${item.img}" alt="${item.en}" class="h-full w-auto max-w-full object-contain drop-shadow-xl group-hover:scale-110 transition-transform pointer-events-none" onerror="this.src='https://placehold.co/200x200/e2e8f0/1e293b?text='+encodeURIComponent(this.alt)">`;
                 }
 
                 btn.dataset.id = item.id;
-                btn.dataset.uid = item.uid; // Unique ID to prevent selecting the same box twice
+                btn.dataset.uid = item.uid;
                 btn.onclick = () => selectCard(btn);
                 grid.appendChild(btn);
             });
@@ -813,9 +808,7 @@
             if (isProcessingMatch) return;
             if (btnElement.classList.contains('card-matched')) return;
             
-            // Prevent clicking the exact same card twice
             if (selectedCards.length === 1 && selectedCards[0].dataset.uid === btnElement.dataset.uid) {
-                // Deselect logic
                 playSfx('click');
                 btnElement.classList.remove('card-selected');
                 selectedCards = [];
@@ -837,7 +830,6 @@
             const card2 = selectedCards[1];
 
             if (card1.dataset.id === card2.dataset.id) {
-                // Correct Match: ELECTRIC SHOCK
                 playSfx('match');
                 
                 card1.classList.remove('card-selected');
@@ -850,7 +842,6 @@
                 let currentRoundTotalPairs = Math.min((currentRound + 1) * pairsPerRound, vocabData.length) - (currentRound * pairsPerRound);
 
                 setTimeout(() => {
-                    // Lock in the match visually
                     card1.classList.remove('electric-match');
                     card2.classList.remove('electric-match');
                     card1.classList.add('card-matched');
@@ -872,10 +863,9 @@
                             }
                         }, 600);
                     }
-                }, 800); // 800ms of electric flowing effect before finalizing
+                }, 800);
                 
             } else {
-                // Incorrect Match
                 playSfx('error');
                 
                 card1.classList.remove('card-selected');
