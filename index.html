@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>⚡ Energy Vocab Quest</title>
+    <title>⚡ Energy Sources Quest</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -186,6 +186,68 @@
             95% { opacity: 0.25; }
         }
 
+        /* High-Tech Scanner Effects */
+        .hud-input {
+            background: rgba(15, 23, 42, 0.6);
+            border: 2px solid rgba(148, 163, 184, 0.3);
+            color: #fff;
+            text-align: center;
+            letter-spacing: 0.1em;
+            font-family: monospace;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+        .hud-input:focus {
+            outline: none;
+            background: rgba(15, 23, 42, 0.9);
+            transform: scale(1.02);
+        }
+        .hud-input-pink:focus { border-color: #ec4899; box-shadow: 0 0 15px rgba(236, 72, 153, 0.5), inset 0 0 10px rgba(236, 72, 153, 0.3); }
+        .hud-input-teal:focus { border-color: #14b8a6; box-shadow: 0 0 15px rgba(20, 184, 166, 0.5), inset 0 0 10px rgba(20, 184, 166, 0.3); }
+
+        .scanner-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 3px;
+            border-radius: 50%;
+            z-index: 20;
+            pointer-events: none;
+            opacity: 0;
+        }
+        .scan-active .scanner-line {
+            animation: scan-sweep 1.5s linear infinite;
+        }
+        .scanner-line-pink { background: #ec4899; box-shadow: 0 0 20px #ec4899, 0 0 40px #ec4899; }
+        .scanner-line-teal { background: #14b8a6; box-shadow: 0 0 20px #14b8a6, 0 0 40px #14b8a6; }
+
+        @keyframes scan-sweep {
+            0% { top: 0%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        .hud-container {
+            position: relative;
+            overflow: hidden;
+        }
+        .hud-container::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px);
+            pointer-events: none;
+            z-index: 5;
+        }
+        .access-granted {
+            animation: flash-green 0.6s ease-out;
+        }
+        @keyframes flash-green {
+            0%, 100% { box-shadow: none; border-color: rgba(255,255,255,0.8); }
+            50% { box-shadow: 0 0 30px #22c55e, inset 0 0 30px #22c55e; border-color: #22c55e; }
+        }
+
     </style>
 </head>
 <body class="h-full w-full overflow-hidden flex flex-col noselect text-slate-800 relative">
@@ -209,7 +271,7 @@
                     <i class="fa-solid fa-bolt text-xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-extrabold text-white tracking-wide glow-text">ENERGY <span class="text-yellow-400">VOCAB</span></h1>
+                    <h1 class="text-xl font-extrabold text-white tracking-wide glow-text">ENERGY <span class="text-yellow-400">SOURCES</span></h1>
                     <p class="text-[10px] text-slate-300 font-bold uppercase tracking-wider">Interactive Master</p>
                 </div>
             </div>
@@ -219,14 +281,17 @@
                 <button onclick="switchTab('learn')" id="tab-learn" class="px-3 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md transition-all duration-300 flex items-center space-x-1.5 whitespace-nowrap">
                     <i class="fa-solid fa-book-open"></i><span>1. Learn</span>
                 </button>
-                <button onclick="switchTab('quiz')" id="tab-quiz" class="px-3 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-300 flex items-center space-x-1.5 whitespace-nowrap">
-                    <i class="fa-solid fa-microphone"></i><span>2. Quiz</span>
-                </button>
                 <button onclick="switchTab('game')" id="tab-game" class="px-3 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-300 flex items-center space-x-1.5 whitespace-nowrap">
-                    <i class="fa-solid fa-gamepad"></i><span>3. Game</span>
+                    <i class="fa-solid fa-gamepad"></i><span>2. Game</span>
+                </button>
+                <button onclick="switchTab('quiz')" id="tab-quiz" class="px-3 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-300 flex items-center space-x-1.5 whitespace-nowrap">
+                    <i class="fa-solid fa-pen-to-square"></i><span>3. Quiz</span>
+                </button>
+                <button onclick="switchTab('voice')" id="tab-voice" class="px-3 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-300 flex items-center space-x-1.5 whitespace-nowrap">
+                    <i class="fa-solid fa-microphone"></i><span>4. Voice</span>
                 </button>
                 <button onclick="switchTab('ranking')" id="tab-ranking" class="px-3 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-300 flex items-center space-x-1.5 whitespace-nowrap">
-                    <i class="fa-solid fa-ranking-star"></i><span>4. Rank</span>
+                    <i class="fa-solid fa-ranking-star"></i><span>5. Rank</span>
                 </button>
             </div>
         </div>
@@ -280,7 +345,52 @@
             </div>
         </section>
 
-        <!-- ================= CATEGORY 2: KNOWLEDGE QUIZ ================= -->
+        <!-- ================= CATEGORY 2: MATCHING GAME (GRID BOXES) ================= -->
+        <section id="sec-game" class="w-full h-full flex flex-col items-center justify-between py-1 hidden opacity-0 transition-all duration-500 absolute inset-0 p-2 sm:p-5 max-w-7xl mx-auto">
+            
+            <div class="text-center w-full flex-none flex flex-col items-center z-10 mb-2">
+                <div class="flex items-center justify-between w-full px-2 mb-1">
+                    <span class="inline-block px-3 py-1 rounded-full text-xs font-bold text-white shadow-md bg-gradient-to-r from-amber-500 to-orange-500 uppercase tracking-wider"><i class="fa-solid fa-bolt mr-1"></i> Speed Match</span>
+                    <span id="game-round-indicator" class="px-3 py-1 rounded-full text-xs font-extrabold text-amber-300 bg-slate-900/80 border border-amber-400/30">Round 1 / 3</span>
+                </div>
+                <h2 class="text-xl sm:text-3xl font-black text-white glow-text">Symbol & Word Match</h2>
+                <p class="text-slate-300 text-xs sm:text-sm font-bold opacity-80 mt-0.5">Find matching pairs to spark the electricity!</p>
+            </div>
+
+            <!-- Single Grid Game Board -->
+            <div id="game-board-grid" class="flex-grow w-full grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4 p-1 sm:p-3 overflow-y-auto custom-scrollbar content-center z-10">
+                <!-- Populated dynamically via JS -->
+            </div>
+
+            <!-- Bottom Navigation Bar for Game Rounds -->
+            <div class="flex-none w-full flex items-center justify-between px-2 pt-2 pb-1 z-10">
+                <button onclick="changeGameRound(-1)" id="btn-prev-round" class="px-3 sm:px-4 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-white font-bold text-xs flex items-center space-x-1 border border-white/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                    <i class="fa-solid fa-chevron-left"></i><span class="hidden sm:inline">Prev Round</span>
+                </button>
+                
+                <span id="game-progress-text" class="text-xs sm:text-sm font-bold text-slate-300 bg-slate-900/50 px-3 py-1 rounded-full border border-white/10">Words 1 - 5 of 15</span>
+
+                <button onclick="changeGameRound(1)" id="btn-next-round" class="px-3 sm:px-4 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-white font-bold text-xs flex items-center space-x-1 border border-white/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                    <span class="hidden sm:inline">Next Round</span><i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+
+            <!-- Victory Screen Overlay -->
+            <div id="game-win" class="absolute inset-0 glass z-30 flex flex-col items-center justify-center hidden p-6 animate-fade-in">
+                <div class="glass-card p-8 rounded-3xl max-w-sm w-full text-center flex flex-col items-center shadow-2xl border-4 border-yellow-300 animate-bounce-short">
+                    <div class="w-20 h-20 bg-gradient-to-tr from-yellow-300 to-amber-500 rounded-full flex items-center justify-center text-slate-900 shadow-xl mb-4 text-4xl">
+                        <i class="fa-solid fa-trophy animate-pulse"></i>
+                    </div>
+                    <h2 class="text-3xl font-black text-slate-800 mb-1">ALL CLEAR!</h2>
+                    <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6">Power completely restored!</p>
+                    <button onclick="initGame()" class="w-full py-3.5 bg-gradient-to-r from-yellow-400 via-amber-500 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-slate-950 rounded-full font-black text-sm uppercase tracking-wider shadow-lg shadow-amber-500/40 transition-all transform hover:scale-105 active:scale-95">
+                        Play Again <i class="fa-solid fa-rotate-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= CATEGORY 3: KNOWLEDGE QUIZ ================= -->
         <section id="sec-quiz" class="w-full h-full flex flex-col items-center py-1 hidden opacity-0 transition-all duration-500 absolute inset-0 p-3 sm:p-5 max-w-5xl mx-auto">
              <div class="text-center w-full flex-none mb-1">
                 <span class="inline-block px-3 py-1 rounded-full text-xs font-bold text-white shadow-md mb-1 bg-gradient-to-r from-pink-500 to-rose-500 uppercase tracking-wider">Knowledge Check</span>
@@ -288,22 +398,34 @@
             </div>
 
             <!-- Login Panel -->
-            <div id="quiz-login-panel" class="glass-card rounded-3xl w-full max-w-md flex-grow flex flex-col items-center justify-center p-5 relative overflow-hidden shadow-2xl border-4 border-white/80 my-2">
-                <h3 class="text-lg font-black text-slate-700 mb-4 text-center">Student Identification</h3>
-                <form id="quiz-login-form" class="w-full flex flex-col gap-3">
-                    <select id="quiz-section-input" required class="w-full p-3 rounded-xl bg-slate-50 border-2 border-slate-200 text-slate-800 font-bold outline-none focus:border-pink-500 focus:bg-white transition-all shadow-inner text-sm">
-                        <option value="" disabled selected>Select Section...</option>
-                        <option value="801">Class 801</option>
-                        <option value="802">Class 802</option>
-                        <option value="803">Class 803</option>
-                        <option value="804">Class 804</option>
-                        <option value="805">Class 805</option>
-                    </select>
-                    <input type="number" id="quiz-seat-input" required placeholder="Seat Number e.g. 1-50" min="1" max="50" class="w-full p-3 rounded-xl bg-slate-50 border-2 border-slate-200 text-slate-800 font-bold outline-none focus:border-pink-500 focus:bg-white transition-all shadow-inner text-sm">
-                    <input type="text" id="quiz-name-input" required placeholder="Name" class="w-full p-3 rounded-xl bg-slate-50 border-2 border-slate-200 text-slate-800 font-bold outline-none focus:border-pink-500 focus:bg-white transition-all shadow-inner text-sm">
+            <div id="quiz-login-panel" class="hud-container rounded-3xl w-full max-w-md flex-grow flex flex-col items-center justify-center p-6 relative shadow-[0_0_40px_rgba(0,0,0,0.5)] border-4 border-slate-700 bg-slate-900 my-2">
+                <div class="scanner-line scanner-line-pink" id="quiz-scanner-line"></div>
+                
+                <div class="w-16 h-16 bg-slate-800 rounded-full border-2 border-pink-500/50 flex items-center justify-center text-pink-500 mb-4 relative z-10 shadow-[0_0_15px_rgba(236,72,153,0.3)]">
+                    <i class="fa-solid fa-fingerprint text-3xl animate-pulse"></i>
+                    <div class="absolute inset-0 rounded-full border-t-2 border-pink-500 animate-spin" style="animation-duration: 3s;"></div>
+                </div>
+                
+                <h3 class="text-sm font-black text-pink-400 mb-6 text-center uppercase tracking-widest z-10">Energy Signature Scan</h3>
+                
+                <form id="quiz-login-form" class="w-full flex flex-col gap-4 relative z-10">
+                    <div class="relative group">
+                        <select id="quiz-section-input" required class="w-full p-3.5 rounded-xl hud-input hud-input-pink text-sm cursor-pointer appearance-none">
+                            <option value="" disabled selected>-- SELECT CLASS --</option>
+                            <option value="801">Class 801</option>
+                            <option value="802">Class 802</option>
+                            <option value="803">Class 803</option>
+                            <option value="804">Class 804</option>
+                            <option value="805">Class 805</option>
+                        </select>
+                        <i class="fa-solid fa-caret-down absolute right-4 top-1/2 transform -translate-y-1/2 text-pink-500/70 pointer-events-none group-focus-within:text-pink-400"></i>
+                    </div>
                     
-                    <button type="submit" class="mt-2 w-full py-3.5 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-400 hover:to-rose-500 text-white font-black rounded-xl shadow-lg shadow-pink-500/30 transition-all transform hover:scale-[1.02] active:scale-95 uppercase tracking-wider text-sm flex justify-center items-center gap-2">
-                        <span>Start Mission</span> <i class="fa-solid fa-rocket"></i>
+                    <input type="number" id="quiz-seat-input" required placeholder="Student Number (1-50)" min="1" max="50" class="w-full p-3.5 rounded-xl hud-input hud-input-pink text-sm">
+                    <input type="text" id="quiz-name-input" required placeholder="Student Name" class="w-full p-3.5 rounded-xl hud-input hud-input-pink text-sm">
+                    
+                    <button type="submit" id="quiz-submit-btn" class="mt-4 w-full py-4 bg-pink-900/40 hover:bg-pink-800/60 border-2 border-pink-500 text-pink-400 font-black rounded-xl shadow-[0_0_15px_rgba(236,72,153,0.3)] hover:shadow-[0_0_25px_rgba(236,72,153,0.6)] hover:text-pink-200 transition-all transform hover:scale-[1.02] active:scale-95 uppercase tracking-widest text-sm flex justify-center items-center gap-3">
+                        <span id="quiz-btn-text">Start Quiz</span> <i class="fa-solid fa-bolt" id="quiz-btn-icon"></i>
                     </button>
                 </form>
             </div>
@@ -314,9 +436,9 @@
                     <span id="quiz-student-info" class="text-pink-600 bg-pink-100 px-2.5 py-1 rounded-md border border-pink-200"></span>
                     <span id="quiz-progress-text" class="bg-slate-800 text-white px-3 py-1 rounded-full shadow-inner">1 / 15</span>
                 </div>
-                <div class="flex-grow flex items-center justify-center w-full min-h-[100px] sm:min-h-[140px] relative group my-1">
+                <div class="flex-grow flex items-center justify-center w-full min-h-[160px] sm:min-h-[220px] relative group my-2">
                     <div class="absolute inset-0 bg-gradient-to-tr from-pink-500/10 to-rose-500/10 rounded-xl -z-10"></div>
-                    <img id="quiz-mcq-img" src="" class="max-h-28 sm:max-h-36 w-auto object-contain drop-shadow-xl" alt="Quiz Image" onerror="this.src='https://placehold.co/200x200/e2e8f0/1e293b?text='+encodeURIComponent(this.alt)">
+                    <img id="quiz-mcq-img" src="" class="w-full h-full max-h-[180px] sm:max-h-[240px] object-contain drop-shadow-xl" alt="Quiz Image" onerror="this.src='https://placehold.co/400x300/e2e8f0/1e293b?text='+encodeURIComponent(this.alt)">
                 </div>
                 <div class="w-full grid grid-cols-1 gap-2 mt-1 flex-none" id="quiz-options-container">
                     <button onclick="selectQuizOption(0)" id="quiz-opt-0" class="w-full p-3 bg-white hover:bg-slate-50 text-slate-700 font-bold rounded-xl border-2 border-slate-200 shadow-sm transition-all active:scale-95 text-sm flex items-center justify-center relative overflow-hidden group"><span class="relative z-10 w-full text-center">Option 1</span></button>
@@ -342,69 +464,100 @@
             </div>
         </section>
 
-        <!-- ================= CATEGORY 3: MATCHING GAME (GRID BOXES) ================= -->
-        <section id="sec-game" class="w-full h-full flex flex-col items-center justify-between py-1 hidden opacity-0 transition-all duration-500 absolute inset-0 p-2 sm:p-5 max-w-7xl mx-auto">
-            
-            <div class="text-center w-full flex-none flex flex-col items-center z-10 mb-2">
-                <div class="flex items-center justify-between w-full px-2 mb-1">
-                    <span class="inline-block px-3 py-1 rounded-full text-xs font-bold text-white shadow-md bg-gradient-to-r from-amber-500 to-orange-500 uppercase tracking-wider"><i class="fa-solid fa-bolt mr-1"></i> Electric Match</span>
-                    <span id="game-round-indicator" class="px-3 py-1 rounded-full text-xs font-extrabold text-amber-300 bg-slate-900/80 border border-amber-400/30">Round 1 / 3</span>
-                </div>
-                <h2 class="text-xl sm:text-3xl font-black text-white glow-text">Connect the Power</h2>
-                <p class="text-slate-300 text-xs sm:text-sm font-bold opacity-80 mt-0.5">Find matching pairs to spark the electricity!</p>
+        <!-- ================= CATEGORY 4: PRONUNCIATION QUIZ ================= -->
+        <section id="sec-voice" class="w-full h-full flex flex-col items-center py-1 hidden opacity-0 transition-all duration-500 absolute inset-0 p-3 sm:p-5 max-w-5xl mx-auto">
+             <div class="text-center w-full flex-none mb-1">
+                <span class="inline-block px-3 py-1 rounded-full text-xs font-bold text-white shadow-md mb-1 bg-gradient-to-r from-emerald-500 to-teal-500 uppercase tracking-wider">Pronunciation</span>
+                <h2 class="text-xl sm:text-2xl font-black text-white glow-text">Voice Quiz</h2>
             </div>
 
-            <!-- Single Grid Game Board -->
-            <div id="game-board-grid" class="flex-grow w-full grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4 p-1 sm:p-3 overflow-y-auto custom-scrollbar content-center z-10">
-                <!-- Populated dynamically via JS -->
-            </div>
-
-            <!-- Bottom Navigation Bar for Game Rounds -->
-            <div class="flex-none w-full flex items-center justify-between px-2 pt-2 pb-1 z-10">
-                <button onclick="changeGameRound(-1)" id="btn-prev-round" class="px-3 sm:px-4 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-white font-bold text-xs flex items-center space-x-1 border border-white/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
-                    <i class="fa-solid fa-chevron-left"></i><span class="hidden sm:inline">Prev Round</span>
-                </button>
+            <!-- Login Panel -->
+            <div id="voice-login-panel" class="hud-container rounded-3xl w-full max-w-md flex-grow flex flex-col items-center justify-center p-6 relative shadow-[0_0_40px_rgba(0,0,0,0.5)] border-4 border-slate-700 bg-slate-900 my-2">
+                <div class="scanner-line scanner-line-teal" id="voice-scanner-line"></div>
                 
-                <span id="game-progress-text" class="text-xs sm:text-sm font-bold text-slate-300 bg-slate-900/50 px-3 py-1 rounded-full border border-white/10">Matching 5 of 15 words</span>
+                <div class="w-16 h-16 bg-slate-800 rounded-full border-2 border-teal-500/50 flex items-center justify-center text-teal-500 mb-4 relative z-10 shadow-[0_0_15px_rgba(20,184,166,0.3)]">
+                    <i class="fa-solid fa-microphone-lines text-3xl animate-pulse"></i>
+                    <div class="absolute inset-0 rounded-full border-t-2 border-teal-500 animate-spin" style="animation-duration: 4s; animation-direction: reverse;"></div>
+                </div>
+                
+                <h3 class="text-sm font-black text-teal-400 mb-6 text-center uppercase tracking-widest z-10">Vocal Pattern Calibration</h3>
+                
+                <form id="voice-login-form" class="w-full flex flex-col gap-4 relative z-10">
+                    <div class="relative group">
+                        <select id="voice-section-input" required class="w-full p-3.5 rounded-xl hud-input hud-input-teal text-sm cursor-pointer appearance-none">
+                            <option value="" disabled selected>-- SELECT CLASS --</option>
+                            <option value="801">Class 801</option>
+                            <option value="802">Class 802</option>
+                            <option value="803">Class 803</option>
+                            <option value="804">Class 804</option>
+                            <option value="805">Class 805</option>
+                        </select>
+                        <i class="fa-solid fa-caret-down absolute right-4 top-1/2 transform -translate-y-1/2 text-teal-500/70 pointer-events-none group-focus-within:text-teal-400"></i>
+                    </div>
+                    
+                    <input type="number" id="voice-seat-input" required placeholder="Student Number (1-50)" min="1" max="50" class="w-full p-3.5 rounded-xl hud-input hud-input-teal text-sm">
+                    <input type="text" id="voice-name-input" required placeholder="Student Name" class="w-full p-3.5 rounded-xl hud-input hud-input-teal text-sm">
+                    
+                    <button type="submit" id="voice-submit-btn" class="mt-4 w-full py-4 bg-teal-900/40 hover:bg-teal-800/60 border-2 border-teal-500 text-teal-400 font-black rounded-xl shadow-[0_0_15px_rgba(20,184,166,0.3)] hover:shadow-[0_0_25px_rgba(20,184,166,0.6)] hover:text-teal-200 transition-all transform hover:scale-[1.02] active:scale-95 uppercase tracking-widest text-sm flex justify-center items-center gap-3">
+                        <span id="voice-btn-text">Start Voice Quiz</span> <i class="fa-solid fa-microphone" id="voice-btn-icon"></i>
+                    </button>
+                </form>
+            </div>
 
-                <button onclick="changeGameRound(1)" id="btn-next-round" class="px-3 sm:px-4 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-white font-bold text-xs flex items-center space-x-1 border border-white/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
-                    <span class="hidden sm:inline">Next Round</span><i class="fa-solid fa-chevron-right"></i>
+            <!-- Active Voice Panel -->
+            <div id="voice-active-panel" class="hidden glass-card rounded-3xl w-full max-w-md flex-grow flex flex-col items-center justify-between p-4 relative overflow-hidden shadow-2xl border-4 border-white/80 my-2">
+                <div class="w-full flex justify-between items-center text-xs font-bold mb-1">
+                    <span id="voice-student-info" class="text-teal-600 bg-teal-100 px-2.5 py-1 rounded-md border border-teal-200"></span>
+                    <span id="voice-progress-text" class="bg-slate-800 text-white px-3 py-1 rounded-full shadow-inner">1 / 15</span>
+                </div>
+                
+                <h3 id="voice-target-word" class="text-2xl font-black text-slate-800 my-2 text-center drop-shadow-sm">Word</h3>
+                
+                <div class="flex-grow flex items-center justify-center w-full min-h-[160px] sm:min-h-[220px] relative group my-2">
+                    <img id="voice-img" src="" class="w-full h-full max-h-[180px] sm:max-h-[240px] object-contain drop-shadow-xl" alt="Voice Image" onerror="this.src='https://placehold.co/400x300/e2e8f0/1e293b?text='+encodeURIComponent(this.alt)">
+                </div>
+                
+                <div id="voice-feedback" class="text-sm font-bold text-slate-500 mb-2 h-5 text-center">Tap the mic and speak!</div>
+                
+                <button onclick="toggleMic()" id="btn-mic" class="w-16 h-16 rounded-full bg-gradient-to-tr from-slate-700 to-slate-900 text-white shadow-xl flex items-center justify-center text-2xl transition-all duration-300 hover:scale-110 active:scale-95 border-4 border-white/50">
+                    <i class="fa-solid fa-microphone"></i>
                 </button>
             </div>
 
-            <!-- Victory Screen Overlay -->
-            <div id="game-win" class="absolute inset-0 glass z-30 flex flex-col items-center justify-center hidden p-6 animate-fade-in">
-                <div class="glass-card p-8 rounded-3xl max-w-sm w-full text-center flex flex-col items-center shadow-2xl border-4 border-yellow-300 animate-bounce-short">
-                    <div class="w-20 h-20 bg-gradient-to-tr from-yellow-300 to-amber-500 rounded-full flex items-center justify-center text-slate-900 shadow-xl mb-4 text-4xl">
-                        <i class="fa-solid fa-trophy animate-pulse"></i>
-                    </div>
-                    <h2 class="text-3xl font-black text-slate-800 mb-1">ALL CLEAR!</h2>
-                    <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6">Power completely restored!</p>
-                    <button onclick="initGame()" class="w-full py-3.5 bg-gradient-to-r from-yellow-400 via-amber-500 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-slate-950 rounded-full font-black text-sm uppercase tracking-wider shadow-lg shadow-amber-500/40 transition-all transform hover:scale-105 active:scale-95">
-                        Play Again <i class="fa-solid fa-rotate-right ml-2"></i>
-                    </button>
+            <!-- Result Panel -->
+            <div id="voice-result-panel" class="hidden glass-card rounded-3xl w-full max-w-md flex-grow flex flex-col items-center justify-center p-6 relative overflow-hidden shadow-2xl border-4 border-teal-300 my-2">
+                <div class="w-20 h-20 bg-gradient-to-tr from-emerald-400 to-teal-500 rounded-full flex items-center justify-center text-white shadow-xl mb-4 text-4xl animate-bounce-short border-4 border-white">
+                    <i class="fa-solid fa-bullhorn"></i>
                 </div>
+                <h3 class="text-3xl font-black text-slate-800 mb-1">Voice Clear!</h3>
+                <p class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4" id="voice-final-student">Student Name</p>
+                <div class="text-5xl font-black text-teal-600 mb-8 drop-shadow-md" id="voice-final-score">15/15</div>
+                <button onclick="resetVoice()" class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black rounded-xl shadow-lg transition-transform transform hover:scale-[1.02] active:scale-95 uppercase tracking-wider text-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-rotate-left"></i> <span>Retake Test</span>
+                </button>
             </div>
         </section>
 
-        <!-- ================= CATEGORY 4: RANKING ================= -->
+        <!-- ================= CATEGORY 5: RANKING ================= -->
         <section id="sec-ranking" class="w-full h-full flex flex-col items-center py-1 hidden opacity-0 transition-all duration-500 absolute inset-0 p-3 sm:p-5 max-w-5xl mx-auto">
             <div class="text-center w-full flex-none mb-2">
                 <span class="inline-block px-3 py-1 rounded-full text-xs font-bold text-white shadow-md mb-1 bg-gradient-to-r from-purple-500 to-indigo-500 uppercase tracking-wider">Top Scholars</span>
-                <h2 class="text-xl sm:text-2xl font-black text-white glow-text">Quiz Leaderboard</h2>
+                <h2 class="text-xl sm:text-2xl font-black text-white glow-text">Leaderboards</h2>
             </div>
             <div class="glass-card rounded-3xl w-full max-w-md flex-grow flex flex-col p-4 relative overflow-hidden shadow-2xl border-4 border-white/80 my-2">
-                <select id="ranking-filter" onchange="renderRanking()" class="w-full p-2 mb-3 rounded-lg text-sm bg-slate-50 text-slate-700 font-bold border-2 border-slate-200 outline-none focus:border-purple-500 shadow-inner">
-                    <option value="ALL">All Classes (Full Level)</option>
-                    <option value="801">Class 801</option>
-                    <option value="802">Class 802</option>
-                    <option value="803">Class 803</option>
-                    <option value="804">Class 804</option>
-                    <option value="805">Class 805</option>
-                </select>
+                <div class="flex w-full mb-3">
+                    <select id="ranking-filter" onchange="renderRanking()" class="w-full p-3 rounded-xl text-xs sm:text-sm bg-slate-50 text-slate-700 font-bold border-2 border-slate-200 outline-none focus:border-purple-500 shadow-inner">
+                        <option value="ALL">All Classes (Combined Scores)</option>
+                        <option value="801">Class 801</option>
+                        <option value="802">Class 802</option>
+                        <option value="803">Class 803</option>
+                        <option value="804">Class 804</option>
+                        <option value="805">Class 805</option>
+                    </select>
+                </div>
                 <div class="w-full flex justify-between items-center text-xs font-bold text-slate-400 border-b border-slate-200 pb-2 mb-2 flex-none">
                     <span>Rank & Student</span>
-                    <span>Score</span>
+                    <span>Total Score</span>
                 </div>
                 <div id="ranking-list" class="flex-grow overflow-y-auto pr-1 space-y-2 flex flex-col custom-scrollbar">
                     <!-- Populated via JS -->
@@ -419,9 +572,10 @@
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyEAiLc1_-JZXbHbSKbxt9pv0tce_7YzTvBSKFYdkk8idbg_HTPrSB7o8NTrtTIae0f/exec"; 
         window.leaderboardData = [];
 
-        window.saveToLeaderboardDB = async (name, section, seat, score, max) => {
+        window.saveToLeaderboardDB = async (name, section, seat, score, max, quizType = 'mcq') => {
             if (!GOOGLE_SCRIPT_URL) return;
-            const data = { name, section, seat, score, max };
+            // Secretly append the quiz type to the section so we don't need to change the Google Sheet structure!
+            const data = { name, section: section + '::' + quizType, seat, score, max };
             try {
                 await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
@@ -438,8 +592,20 @@
             if (!GOOGLE_SCRIPT_URL) return;
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL);
-                const data = await response.json();
-                window.leaderboardData = data;
+                const rawData = await response.json();
+                
+                // Parse the quiz type back out of the section field
+                window.leaderboardData = rawData.map(d => {
+                    let sec = String(d.section);
+                    let qType = 'mcq';
+                    if (sec.includes('::')) {
+                        let parts = sec.split('::');
+                        sec = parts[0];
+                        qType = parts[1];
+                    }
+                    return { ...d, section: sec, quizType: qType };
+                });
+                
                 if (window.currentTab === 'ranking') window.renderRanking();
             } catch (error) {
                 console.error("Leaderboard fetch error:", error);
@@ -509,6 +675,22 @@
                 gain.gain.linearRampToValueAtTime(0, now + 0.2);
                 osc.start(now);
                 osc.stop(now + 0.2);
+            } else if (type === 'scan') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.linearRampToValueAtTime(1200, now + 0.1);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } else if (type === 'granted') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, now);
+                osc.frequency.setValueAtTime(1760, now + 0.1);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.4);
             } else if (type === 'win') {
                 const notes = [523.25, 659.25, 783.99, 1046.50];
                 notes.forEach((freq, idx) => {
@@ -551,7 +733,7 @@
             playSfx('click');
             currentTab = tab;
             
-            ['learn', 'quiz', 'game', 'ranking'].forEach(t => {
+            ['learn', 'game', 'quiz', 'voice', 'ranking'].forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
                 if (!btn) return;
                 if (t === tab) {
@@ -561,7 +743,7 @@
                 }
             });
 
-            ['learn', 'quiz', 'game', 'ranking'].forEach(t => {
+            ['learn', 'game', 'quiz', 'voice', 'ranking'].forEach(t => {
                 const sec = document.getElementById(`sec-${t}`);
                 if (!sec) return;
                 if (t === tab) {
@@ -633,99 +815,7 @@
             window.speechSynthesis.speak(utterance);
         }
 
-        // --- CATEGORY 2: MCQ QUIZ LOGIC ---
-        let mcqQuestions = [];
-        let mcqCurrentIndex = 0;
-        let mcqScore = 0;
-        let mcqStudentInfo = {};
-        let currentMCQOptions = [];
-
-        document.getElementById('quiz-login-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            playSfx('click');
-            mcqStudentInfo = {
-                section: document.getElementById('quiz-section-input').value,
-                seat: document.getElementById('quiz-seat-input').value,
-                name: document.getElementById('quiz-name-input').value
-            };
-            document.getElementById('quiz-login-panel').classList.add('hidden');
-            document.getElementById('quiz-active-panel').classList.remove('hidden');
-            startMCQ();
-        });
-
-        function startMCQ() {
-            mcqQuestions = shuffle([...vocabData]);
-            mcqCurrentIndex = 0;
-            mcqScore = 0;
-            const seatFormatted = mcqStudentInfo.seat.toString().padStart(2, '0');
-            document.getElementById('quiz-student-info').innerText = `${mcqStudentInfo.section}-${seatFormatted} ${mcqStudentInfo.name}`;
-            loadMCQ();
-        }
-
-        function loadMCQ() {
-            const currentQ = mcqQuestions[mcqCurrentIndex];
-            document.getElementById('quiz-progress-text').innerText = `${mcqCurrentIndex + 1} / ${mcqQuestions.length}`;
-            const img = document.getElementById('quiz-mcq-img');
-            img.src = currentQ.img;
-            img.alt = currentQ.en;
-            
-            let wrongOptions = vocabData.filter(v => v.en !== currentQ.en);
-            wrongOptions = shuffle(wrongOptions).slice(0, 3);
-            currentMCQOptions = shuffle([currentQ, ...wrongOptions]);
-            
-            for(let i=0; i<4; i++) {
-                const btn = document.getElementById(`quiz-opt-${i}`);
-                btn.querySelector('span').innerText = currentMCQOptions[i].en;
-                btn.className = "w-full p-3 bg-white hover:bg-slate-50 text-slate-700 font-bold rounded-xl border-2 border-slate-200 shadow-sm transition-all active:scale-95 text-sm flex items-center justify-center relative overflow-hidden group";
-                btn.disabled = false;
-            }
-        }
-
-        function selectQuizOption(idx) {
-            const selected = currentMCQOptions[idx];
-            const currentQ = mcqQuestions[mcqCurrentIndex];
-            for(let i=0; i<4; i++) document.getElementById(`quiz-opt-${i}`).disabled = true;
-            const btn = document.getElementById(`quiz-opt-${idx}`);
-            
-            if (selected.en === currentQ.en) {
-                playSfx('click');
-                setTimeout(() => playSfx('match'), 50); 
-                btn.classList.add('!bg-green-100', '!border-green-500', '!text-green-700');
-                mcqScore++;
-            } else {
-                playSfx('error');
-                btn.classList.add('!bg-red-100', '!border-red-500', '!text-red-700');
-                const correctIdx = currentMCQOptions.findIndex(o => o.en === currentQ.en);
-                if(correctIdx !== -1) document.getElementById(`quiz-opt-${correctIdx}`).classList.add('!bg-green-100', '!border-green-500', '!text-green-700');
-            }
-            setTimeout(() => {
-                mcqCurrentIndex++;
-                if (mcqCurrentIndex < mcqQuestions.length) loadMCQ();
-                else endMCQ();
-            }, 1000);
-        }
-
-        function endMCQ() {
-            playSfx('win');
-            confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
-            document.getElementById('quiz-active-panel').classList.add('hidden');
-            document.getElementById('quiz-result-panel').classList.remove('hidden');
-            const seatFormatted = mcqStudentInfo.seat.toString().padStart(2, '0');
-            document.getElementById('quiz-final-student').innerText = `${mcqStudentInfo.name} | ${mcqStudentInfo.section}-${seatFormatted}`;
-            document.getElementById('quiz-final-score').innerText = `${mcqScore}/${mcqQuestions.length}`;
-            if (window.saveToLeaderboardDB) {
-                window.saveToLeaderboardDB(mcqStudentInfo.name, mcqStudentInfo.section, seatFormatted, mcqScore, mcqQuestions.length);
-            }
-        }
-
-        function resetQuiz() {
-            playSfx('click');
-            document.getElementById('quiz-result-panel').classList.add('hidden');
-            document.getElementById('quiz-login-panel').classList.remove('hidden');
-            document.getElementById('quiz-login-form').reset();
-        }
-
-        // --- CATEGORY 3: MATCHING GAME LOGIC ---
+        // --- CATEGORY 2: MATCHING GAME LOGIC ---
         const pairsPerRound = 5; 
         let currentRound = 0;
         let totalRounds = Math.ceil(vocabData.length / pairsPerRound);
@@ -882,7 +972,296 @@
             }
         }
 
-        // --- CATEGORY 4: RANKING LOGIC ---
+        // --- CATEGORY 3: MCQ QUIZ LOGIC ---
+        let mcqQuestions = [];
+        let mcqCurrentIndex = 0;
+        let mcqScore = 0;
+        let mcqStudentInfo = {};
+        let currentMCQOptions = [];
+
+        document.getElementById('quiz-login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            playSfx('click');
+            
+            const btn = document.getElementById('quiz-submit-btn');
+            const btnText = document.getElementById('quiz-btn-text');
+            const btnIcon = document.getElementById('quiz-btn-icon');
+            const panel = document.getElementById('quiz-login-panel');
+            
+            // Start scanning effect
+            panel.classList.add('scan-active');
+            btn.disabled = true;
+            btnText.innerText = "SCANNING...";
+            btnIcon.className = "fa-solid fa-spinner fa-spin";
+            btn.classList.add('bg-pink-600/50', 'text-white', 'shadow-[0_0_30px_rgba(236,72,153,0.8)]');
+            
+            let scanInterval = setInterval(() => playSfx('scan'), 200);
+
+            setTimeout(() => {
+                clearInterval(scanInterval);
+                playSfx('granted');
+                
+                // Access granted styling
+                panel.classList.remove('scan-active');
+                panel.classList.add('access-granted');
+                btnText.innerText = "ACCESS GRANTED";
+                btnIcon.className = "fa-solid fa-check";
+                btn.classList.replace('border-pink-500', 'border-green-500');
+                btn.classList.replace('text-pink-400', 'text-green-400');
+                btn.classList.replace('bg-pink-600/50', 'bg-green-600/20');
+                btn.classList.add('shadow-[0_0_30px_rgba(34,197,94,0.8)]');
+                
+                setTimeout(() => {
+                    mcqStudentInfo = {
+                        section: document.getElementById('quiz-section-input').value,
+                        seat: document.getElementById('quiz-seat-input').value,
+                        name: document.getElementById('quiz-name-input').value
+                    };
+                    
+                    document.getElementById('quiz-login-panel').classList.add('hidden');
+                    document.getElementById('quiz-active-panel').classList.remove('hidden');
+                    
+                    // Reset styling for next time
+                    btn.disabled = false;
+                    btnText.innerText = "Start Quiz";
+                    btnIcon.className = "fa-solid fa-bolt";
+                    btn.classList.remove('bg-green-600/20', 'text-green-400', 'border-green-500', 'shadow-[0_0_30px_rgba(34,197,94,0.8)]', 'bg-pink-600/50', 'text-white', 'shadow-[0_0_30px_rgba(236,72,153,0.8)]');
+                    btn.classList.add('border-pink-500', 'text-pink-400');
+                    panel.classList.remove('access-granted');
+                    
+                    startMCQ();
+                }, 1000);
+            }, 1600);
+        });
+
+        function startMCQ() {
+            mcqQuestions = shuffle([...vocabData]);
+            mcqCurrentIndex = 0;
+            mcqScore = 0;
+            const seatFormatted = mcqStudentInfo.seat.toString().padStart(2, '0');
+            document.getElementById('quiz-student-info').innerText = `${mcqStudentInfo.section}-${seatFormatted} ${mcqStudentInfo.name}`;
+            loadMCQ();
+        }
+
+        function loadMCQ() {
+            const currentQ = mcqQuestions[mcqCurrentIndex];
+            document.getElementById('quiz-progress-text').innerText = `${mcqCurrentIndex + 1} / ${mcqQuestions.length}`;
+            const img = document.getElementById('quiz-mcq-img');
+            img.src = currentQ.img;
+            img.alt = currentQ.en;
+            
+            let wrongOptions = vocabData.filter(v => v.en !== currentQ.en);
+            wrongOptions = shuffle(wrongOptions).slice(0, 3);
+            currentMCQOptions = shuffle([currentQ, ...wrongOptions]);
+            
+            for(let i=0; i<4; i++) {
+                const btn = document.getElementById(`quiz-opt-${i}`);
+                btn.querySelector('span').innerText = currentMCQOptions[i].en;
+                btn.className = "w-full p-3 bg-white hover:bg-slate-50 text-slate-700 font-bold rounded-xl border-2 border-slate-200 shadow-sm transition-all active:scale-95 text-sm flex items-center justify-center relative overflow-hidden group";
+                btn.disabled = false;
+            }
+        }
+
+        function selectQuizOption(idx) {
+            const selected = currentMCQOptions[idx];
+            const currentQ = mcqQuestions[mcqCurrentIndex];
+            for(let i=0; i<4; i++) document.getElementById(`quiz-opt-${i}`).disabled = true;
+            const btn = document.getElementById(`quiz-opt-${idx}`);
+            
+            if (selected.en === currentQ.en) {
+                playSfx('click');
+                setTimeout(() => playSfx('match'), 50); 
+                btn.classList.add('!bg-green-100', '!border-green-500', '!text-green-700');
+                mcqScore++;
+            } else {
+                playSfx('error');
+                btn.classList.add('!bg-red-100', '!border-red-500', '!text-red-700');
+                const correctIdx = currentMCQOptions.findIndex(o => o.en === currentQ.en);
+                if(correctIdx !== -1) document.getElementById(`quiz-opt-${correctIdx}`).classList.add('!bg-green-100', '!border-green-500', '!text-green-700');
+            }
+            setTimeout(() => {
+                mcqCurrentIndex++;
+                if (mcqCurrentIndex < mcqQuestions.length) loadMCQ();
+                else endMCQ();
+            }, 1000);
+        }
+
+        function endMCQ() {
+            playSfx('win');
+            confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+            document.getElementById('quiz-active-panel').classList.add('hidden');
+            document.getElementById('quiz-result-panel').classList.remove('hidden');
+            const seatFormatted = mcqStudentInfo.seat.toString().padStart(2, '0');
+            document.getElementById('quiz-final-student').innerText = `${mcqStudentInfo.name} | ${mcqStudentInfo.section}-${seatFormatted}`;
+            document.getElementById('quiz-final-score').innerText = `${mcqScore}/${mcqQuestions.length}`;
+            if (window.saveToLeaderboardDB) {
+                window.saveToLeaderboardDB(mcqStudentInfo.name, mcqStudentInfo.section, seatFormatted, mcqScore, mcqQuestions.length, 'mcq');
+            }
+        }
+
+        function resetQuiz() {
+            playSfx('click');
+            document.getElementById('quiz-result-panel').classList.add('hidden');
+            document.getElementById('quiz-login-panel').classList.remove('hidden');
+            document.getElementById('quiz-login-form').reset();
+        }
+
+        // --- CATEGORY 4: VOICE QUIZ LOGIC ---
+        let voiceQuestions = [];
+        let voiceCurrentIndex = 0;
+        let voiceScore = 0;
+        let voiceStudentInfo = {};
+        
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+        }
+
+        document.getElementById('voice-login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            playSfx('click');
+            
+            const btn = document.getElementById('voice-submit-btn');
+            const btnText = document.getElementById('voice-btn-text');
+            const btnIcon = document.getElementById('voice-btn-icon');
+            const panel = document.getElementById('voice-login-panel');
+            
+            if(!recognition) {
+                btnText.innerText = "BROWSER ERROR";
+                btnIcon.className = "fa-solid fa-triangle-exclamation";
+                btn.classList.replace('border-teal-500', 'border-red-500');
+                btn.classList.replace('text-teal-400', 'text-red-500');
+                return;
+            }
+            
+            panel.classList.add('scan-active');
+            btn.disabled = true;
+            btnText.innerText = "ANALYZING...";
+            btnIcon.className = "fa-solid fa-satellite-dish fa-spin";
+            btn.classList.add('bg-teal-600/50', 'text-white', 'shadow-[0_0_30px_rgba(20,184,166,0.8)]');
+            
+            let scanInterval = setInterval(() => playSfx('scan'), 200);
+
+            setTimeout(() => {
+                clearInterval(scanInterval);
+                playSfx('granted');
+                
+                panel.classList.remove('scan-active');
+                panel.classList.add('access-granted');
+                btnText.innerText = "BIOMETRICS LINKED";
+                btnIcon.className = "fa-solid fa-fingerprint";
+                btn.classList.replace('border-teal-500', 'border-green-500');
+                btn.classList.replace('text-teal-400', 'text-green-400');
+                btn.classList.replace('bg-teal-600/50', 'bg-green-600/20');
+                btn.classList.add('shadow-[0_0_30px_rgba(34,197,94,0.8)]');
+                
+                setTimeout(() => {
+                    voiceStudentInfo = {
+                        section: document.getElementById('voice-section-input').value,
+                        seat: document.getElementById('voice-seat-input').value,
+                        name: document.getElementById('voice-name-input').value
+                    };
+                    document.getElementById('voice-login-panel').classList.add('hidden');
+                    document.getElementById('voice-active-panel').classList.remove('hidden');
+                    
+                    // Reset
+                    btn.disabled = false;
+                    btnText.innerText = "Start Voice Quiz";
+                    btnIcon.className = "fa-solid fa-microphone";
+                    btn.classList.remove('bg-green-600/20', 'text-green-400', 'border-green-500', 'shadow-[0_0_30px_rgba(34,197,94,0.8)]', 'bg-teal-600/50', 'text-white', 'shadow-[0_0_30px_rgba(20,184,166,0.8)]');
+                    btn.classList.add('border-teal-500', 'text-teal-400');
+                    panel.classList.remove('access-granted');
+                    
+                    startVoiceQuiz();
+                }, 1000);
+            }, 1600);
+        });
+
+        function startVoiceQuiz() {
+            voiceQuestions = shuffle([...vocabData]);
+            voiceCurrentIndex = 0;
+            voiceScore = 0;
+            const seatFormatted = voiceStudentInfo.seat.toString().padStart(2, '0');
+            document.getElementById('voice-student-info').innerText = `${voiceStudentInfo.section}-${seatFormatted} ${voiceStudentInfo.name}`;
+            loadVoice();
+        }
+
+        function loadVoice() {
+            const currentQ = voiceQuestions[voiceCurrentIndex];
+            document.getElementById('voice-progress-text').innerText = `${voiceCurrentIndex + 1} / ${voiceQuestions.length}`;
+            document.getElementById('voice-target-word').innerText = currentQ.en;
+            document.getElementById('voice-img').src = currentQ.img;
+            document.getElementById('voice-feedback').innerText = "Tap the mic and speak!";
+            document.getElementById('voice-feedback').className = "text-sm font-bold text-slate-500 mb-2 h-5 text-center";
+            document.getElementById('btn-mic').classList.remove('animate-pulse', '!bg-red-500');
+        }
+
+        function toggleMic() {
+            if(!recognition) return;
+            playSfx('click');
+            document.getElementById('btn-mic').classList.add('animate-pulse', '!bg-red-500');
+            document.getElementById('voice-feedback').innerText = "Listening...";
+            document.getElementById('voice-feedback').className = "text-sm font-bold text-blue-500 mb-2 h-5 text-center animate-pulse";
+            
+            try { recognition.start(); } catch(e) { /* catch if already started */ }
+            
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript.toLowerCase().replace(/[.,!?]/g, '');
+                const target = voiceQuestions[voiceCurrentIndex].en.toLowerCase().replace(/[.,!?]/g, '');
+                
+                document.getElementById('btn-mic').classList.remove('animate-pulse', '!bg-red-500');
+                
+                // Allow a pass if they speak the main target word correctly amidst other words
+                if (transcript.includes(target) || target.includes(transcript) || transcript === target) {
+                    playSfx('match');
+                    document.getElementById('voice-feedback').innerText = `Heard: "${transcript}" - CORRECT!`;
+                    document.getElementById('voice-feedback').className = "text-sm font-bold text-green-600 mb-2 h-5 text-center";
+                    voiceScore++;
+                } else {
+                    playSfx('error');
+                    document.getElementById('voice-feedback').innerText = `Heard: "${transcript}" - Try again!`;
+                    document.getElementById('voice-feedback').className = "text-sm font-bold text-red-500 mb-2 h-5 text-center";
+                }
+                
+                setTimeout(() => {
+                    voiceCurrentIndex++;
+                    if (voiceCurrentIndex < voiceQuestions.length) loadVoice();
+                    else endVoice();
+                }, 2000);
+            };
+            
+            recognition.onerror = (event) => {
+                document.getElementById('btn-mic').classList.remove('animate-pulse', '!bg-red-500');
+                document.getElementById('voice-feedback').innerText = "Didn't catch that. Tap again!";
+                document.getElementById('voice-feedback').className = "text-sm font-bold text-orange-500 mb-2 h-5 text-center";
+            };
+        }
+
+        function endVoice() {
+            playSfx('win');
+            confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+            document.getElementById('voice-active-panel').classList.add('hidden');
+            document.getElementById('voice-result-panel').classList.remove('hidden');
+            const seatFormatted = voiceStudentInfo.seat.toString().padStart(2, '0');
+            document.getElementById('voice-final-student').innerText = `${voiceStudentInfo.name} | ${voiceStudentInfo.section}-${seatFormatted}`;
+            document.getElementById('voice-final-score').innerText = `${voiceScore}/${voiceQuestions.length}`;
+            if (window.saveToLeaderboardDB) {
+                window.saveToLeaderboardDB(voiceStudentInfo.name, voiceStudentInfo.section, seatFormatted, voiceScore, voiceQuestions.length, 'voice');
+            }
+        }
+
+        function resetVoice() {
+            playSfx('click');
+            document.getElementById('voice-result-panel').classList.add('hidden');
+            document.getElementById('voice-login-panel').classList.remove('hidden');
+            document.getElementById('voice-login-form').reset();
+        }
+
+        // --- CATEGORY 5: RANKING LOGIC ---
         function loadRanking() { renderRanking(); }
 
         window.renderRanking = function() {
@@ -891,16 +1270,57 @@
             list.innerHTML = '';
             
             let board = window.leaderboardData ? [...window.leaderboardData] : [];
-            if (filter !== "ALL") board = board.filter(entry => entry.section === filter);
             
-            board.sort((a, b) => b.score - a.score || b.date - a.date);
+            // Filter by class section if not ALL
+            if (filter !== "ALL") {
+                board = board.filter(entry => entry.section === filter);
+            }
             
-            if (board.length === 0) {
-                list.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-slate-400 font-bold opacity-70"><i class="fa-solid fa-ghost text-4xl mb-2"></i><p class="text-center text-sm">No scores submitted for this section yet.</p></div>`;
+            // Group by student to calculate combined scores
+            const studentMap = {};
+            board.forEach(entry => {
+                const studentKey = `${entry.section}-${entry.seat}-${entry.name}`;
+                if (!studentMap[studentKey]) {
+                    studentMap[studentKey] = {
+                        name: entry.name,
+                        section: entry.section,
+                        seat: entry.seat,
+                        mcqScore: 0,
+                        voiceScore: 0,
+                        totalScore: 0,
+                        date: entry.date
+                    };
+                }
+                
+                // Keep their best score if they took it multiple times
+                if (entry.quizType === 'mcq') {
+                    studentMap[studentKey].mcqScore = Math.max(studentMap[studentKey].mcqScore, entry.score);
+                } else if (entry.quizType === 'voice') {
+                    studentMap[studentKey].voiceScore = Math.max(studentMap[studentKey].voiceScore, entry.score);
+                }
+                
+                // Track latest completion date for tie-breakers
+                if (entry.date > studentMap[studentKey].date) {
+                    studentMap[studentKey].date = entry.date;
+                }
+            });
+            
+            const maxCombinedScore = vocabData.length * 2; // 15 + 15 = 30
+            
+            let aggregatedBoard = Object.values(studentMap).map(student => {
+                student.totalScore = student.mcqScore + student.voiceScore;
+                return student;
+            });
+            
+            // Sort by highest total score first, then by most recent date
+            aggregatedBoard.sort((a, b) => b.totalScore - a.totalScore || b.date - a.date);
+            
+            if (aggregatedBoard.length === 0) {
+                list.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-slate-400 font-bold opacity-70 mt-8"><i class="fa-solid fa-ghost text-4xl mb-2"></i><p class="text-center text-sm">No scores submitted yet.</p></div>`;
                 return;
             }
 
-            board.forEach((entry, index) => {
+            aggregatedBoard.forEach((entry, index) => {
                 const isTop3 = index < 3;
                 const medalColors = ['text-yellow-400', 'text-slate-300', 'text-amber-600'];
                 const rankIcon = isTop3 ? `<i class="fa-solid fa-medal ${medalColors[index]} text-2xl drop-shadow-md"></i>` : `<span class="text-slate-400 font-black w-6 text-center text-lg">${index + 1}</span>`;
@@ -913,11 +1333,11 @@
                         <div class="w-8 flex justify-center">${rankIcon}</div>
                         <div>
                             <div class="font-black text-slate-800 text-sm sm:text-base">${entry.name}</div>
-                            <div class="text-[10px] sm:text-xs text-slate-500 font-bold tracking-wider">${displayId}</div>
+                            <div class="text-[10px] sm:text-xs text-slate-500 font-bold tracking-wider">${displayId} | MCQ: <span class="text-pink-500">${entry.mcqScore}</span> | Voice: <span class="text-teal-500">${entry.voiceScore}</span></div>
                         </div>
                     </div>
-                    <div class="font-black ${entry.score === entry.max ? 'text-green-500' : 'text-blue-600'} text-xl drop-shadow-sm">
-                        ${entry.score}<span class="text-xs text-slate-400 ml-1">/${entry.max}</span>
+                    <div class="font-black ${entry.totalScore === maxCombinedScore ? 'text-green-500' : 'text-purple-600'} text-xl drop-shadow-sm">
+                        ${entry.totalScore}<span class="text-xs text-slate-400 ml-1">/${maxCombinedScore}</span>
                     </div>
                 `;
                 list.appendChild(item);
