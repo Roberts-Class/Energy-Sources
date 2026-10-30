@@ -1384,8 +1384,20 @@
                 }
             });
             
-            let mcqBoard = Object.values(mcqMap).sort((a, b) => b.score - a.score || a.duration - b.duration || a.date - b.date);
-            let voiceBoard = Object.values(voiceMap).sort((a, b) => b.score - a.score || a.duration - b.duration || a.date - b.date);
+            // 1. Highest Score wins
+            // 2. If tied, Lowest Duration (fastest time) wins
+            // 3. If still tied, Earliest Date of submission wins
+            let mcqBoard = Object.values(mcqMap).sort((a, b) => {
+                if (b.score !== a.score) return b.score - a.score; 
+                if (a.duration !== b.duration) return a.duration - b.duration; 
+                return a.date - b.date; 
+            });
+            
+            let voiceBoard = Object.values(voiceMap).sort((a, b) => {
+                if (b.score !== a.score) return b.score - a.score;
+                if (a.duration !== b.duration) return a.duration - b.duration;
+                return a.date - b.date;
+            });
 
             const renderList = (data, container, maxScore, colorClass) => {
                 if (data.length === 0) {
@@ -1398,7 +1410,7 @@
                     const medalColors = ['text-yellow-400', 'text-slate-300', 'text-amber-600'];
                     const rankIcon = isTop3 ? `<i class="fa-solid fa-medal ${medalColors[index]} text-2xl drop-shadow-md"></i>` : `<span class="text-slate-400 font-black w-6 text-center text-lg">${index + 1}</span>`;
                     const displayId = `${entry.section}-${entry.seat}`;
-                    const timeBadge = entry.duration < 999999 ? `<div class="text-[10px] text-slate-400 font-bold mt-1 text-right bg-slate-100/50 rounded px-1.5 py-0.5"><i class="fa-regular fa-clock"></i> ${entry.duration}s</div>` : '';
+                    const timeBadge = entry.duration < 999999 ? `<div class="text-[10px] text-slate-500 font-bold mt-1 text-right bg-slate-200/50 rounded px-1.5 py-0.5 flex items-center justify-end gap-1"><i class="fa-solid fa-stopwatch text-slate-400"></i> ${entry.duration} sec</div>` : '';
 
                     const item = document.createElement('div');
                     item.className = `flex justify-between items-center p-3 rounded-xl transition-all ${isTop3 ? 'bg-gradient-to-r from-slate-50 to-white border-2 border-slate-200 shadow-sm scale-[1.01]' : 'bg-white/50 border border-transparent'}`;
