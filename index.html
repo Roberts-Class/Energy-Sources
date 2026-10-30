@@ -1386,17 +1386,17 @@
             
             // 1. Highest Score wins
             // 2. If tied, Lowest Duration (fastest time) wins
-            // 3. If still tied, Earliest Date of submission wins
+            // 3. If still tied, Earliest Date of submission wins (with safety fallback for older scores)
             let mcqBoard = Object.values(mcqMap).sort((a, b) => {
-                if (b.score !== a.score) return b.score - a.score; 
-                if (a.duration !== b.duration) return a.duration - b.duration; 
-                return a.date - b.date; 
+                if (b.score !== a.score) return (b.score || 0) - (a.score || 0); 
+                if (a.duration !== b.duration) return (a.duration || 999999) - (b.duration || 999999); 
+                return (a.date || 0) - (b.date || 0); 
             });
             
             let voiceBoard = Object.values(voiceMap).sort((a, b) => {
-                if (b.score !== a.score) return b.score - a.score;
-                if (a.duration !== b.duration) return a.duration - b.duration;
-                return a.date - b.date;
+                if (b.score !== a.score) return (b.score || 0) - (a.score || 0);
+                if (a.duration !== b.duration) return (a.duration || 999999) - (b.duration || 999999);
+                return (a.date || 0) - (b.date || 0);
             });
 
             const renderList = (data, container, maxScore, colorClass) => {
