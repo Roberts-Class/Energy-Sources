@@ -433,8 +433,11 @@
             <!-- Active Quiz Panel -->
             <div id="quiz-active-panel" class="hidden glass-card rounded-3xl w-full max-w-md flex-grow flex flex-col items-center justify-between p-4 relative overflow-hidden shadow-2xl border-4 border-white/80 my-2">
                 <div class="w-full flex justify-between items-center text-xs font-bold mb-1">
-                    <span id="quiz-student-info" class="text-pink-600 bg-pink-100 px-2.5 py-1 rounded-md border border-pink-200"></span>
-                    <span id="quiz-progress-text" class="bg-slate-800 text-white px-3 py-1 rounded-full shadow-inner">1 / 15</span>
+                    <span id="quiz-student-info" class="text-pink-600 bg-pink-100 px-2.5 py-1 rounded-md border border-pink-200 truncate max-w-[45%]"></span>
+                    <div class="flex space-x-1 sm:space-x-2">
+                        <span id="quiz-timer-text" class="bg-slate-800 text-pink-400 font-mono px-2 sm:px-3 py-1 rounded-full shadow-inner tracking-wider"><i class="fa-solid fa-stopwatch mr-1"></i>00:00</span>
+                        <span id="quiz-progress-text" class="bg-slate-800 text-white px-2 sm:px-3 py-1 rounded-full shadow-inner">1 / 15</span>
+                    </div>
                 </div>
                 <div class="flex-grow flex items-center justify-center w-full min-h-[160px] sm:min-h-[220px] relative group my-2">
                     <div class="absolute inset-0 bg-gradient-to-tr from-pink-500/10 to-rose-500/10 rounded-xl -z-10"></div>
@@ -507,8 +510,11 @@
             <!-- Active Voice Panel -->
             <div id="voice-active-panel" class="hidden glass-card rounded-3xl w-full max-w-md flex-grow flex flex-col items-center justify-between p-4 relative overflow-hidden shadow-2xl border-4 border-white/80 my-2">
                 <div class="w-full flex justify-between items-center text-xs font-bold mb-1">
-                    <span id="voice-student-info" class="text-teal-600 bg-teal-100 px-2.5 py-1 rounded-md border border-teal-200"></span>
-                    <span id="voice-progress-text" class="bg-slate-800 text-white px-3 py-1 rounded-full shadow-inner">1 / 15</span>
+                    <span id="voice-student-info" class="text-teal-600 bg-teal-100 px-2.5 py-1 rounded-md border border-teal-200 truncate max-w-[45%]"></span>
+                    <div class="flex space-x-1 sm:space-x-2">
+                        <span id="voice-timer-text" class="bg-slate-800 text-teal-400 font-mono px-2 sm:px-3 py-1 rounded-full shadow-inner tracking-wider"><i class="fa-solid fa-stopwatch mr-1"></i>00:00</span>
+                        <span id="voice-progress-text" class="bg-slate-800 text-white px-2 sm:px-3 py-1 rounded-full shadow-inner">1 / 15</span>
+                    </div>
                 </div>
                 
                 <h3 id="voice-target-word" class="text-2xl font-black text-slate-800 my-2 text-center drop-shadow-sm">Word</h3>
@@ -588,10 +594,10 @@
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyEAiLc1_-JZXbHbSKbxt9pv0tce_7YzTvBSKFYdkk8idbg_HTPrSB7o8NTrtTIae0f/exec"; 
         window.leaderboardData = [];
 
-        window.saveToLeaderboardDB = async (name, section, seat, score, max, quizType = 'mcq') => {
+        window.saveToLeaderboardDB = async (name, section, seat, score, max, timeTaken = 999, quizType = 'mcq') => {
             if (!GOOGLE_SCRIPT_URL) return;
-            // Secretly append the quiz type to the section so we don't need to change the Google Sheet structure!
-            const data = { name, section: section + '::' + quizType, seat, score, max };
+            // Secretly append the quiz type and duration to the section so we don't need to change the Google Sheet structure!
+            const data = { name, section: section + '::' + quizType + '::' + timeTaken, seat, score, max };
             try {
                 await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
@@ -613,16 +619,18 @@
                 const response = await fetch(GOOGLE_SCRIPT_URL);
                 const rawData = await response.json();
                 
-                // Parse the quiz type back out of the section field
+                // Parse the quiz type and duration back out of the section field
                 window.leaderboardData = rawData.map(d => {
                     let sec = String(d.section);
                     let qType = 'mcq';
+                    let duration = 999999;
                     if (sec.includes('::')) {
                         let parts = sec.split('::');
                         sec = parts[0];
                         qType = parts[1];
+                        if (parts.length > 2) duration = parseInt(parts[2], 10) || 999999;
                     }
-                    return { ...d, section: sec, quizType: qType };
+                    return { ...d, section: sec, quizType: qType, duration: duration };
                 });
                 
                 if (window.currentTab === 'ranking') window.renderRanking();
@@ -1007,6 +1015,8 @@
         let mcqCurrentIndex = 0;
         let mcqScore = 0;
         let mcqStudentInfo = {};
+        let mcqStartTime = 0;
+        let mcqTimerInterval;
         let currentMCQOptions = [];
 
         document.getElementById('quiz-login-form').addEventListener('submit', function(e) {
@@ -1068,6 +1078,15 @@
             mcqQuestions = shuffle([...vocabData]);
             mcqCurrentIndex = 0;
             mcqScore = 0;
+            mcqStartTime = Date.now(); // Start the stopwatch
+            
+            clearInterval(mcqTimerInterval);
+            document.getElementById('quiz-timer-text').innerHTML = '<i class="fa-solid fa-stopwatch mr-1"></i>00:00';
+            mcqTimerInterval = setInterval(() => {
+                let s = Math.floor((Date.now() - mcqStartTime) / 1000);
+                document.getElementById('quiz-timer-text').innerHTML = `<i class="fa-solid fa-stopwatch mr-1"></i>${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+            }, 1000);
+
             const seatFormatted = mcqStudentInfo.seat.toString().padStart(2, '0');
             document.getElementById('quiz-student-info').innerText = `${mcqStudentInfo.section}-${seatFormatted} ${mcqStudentInfo.name}`;
             loadMCQ();
@@ -1117,15 +1136,17 @@
         }
 
         function endMCQ() {
+            clearInterval(mcqTimerInterval);
             playSfx('win');
             confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
             document.getElementById('quiz-active-panel').classList.add('hidden');
             document.getElementById('quiz-result-panel').classList.remove('hidden');
             const seatFormatted = mcqStudentInfo.seat.toString().padStart(2, '0');
+            const timeTaken = Math.floor((Date.now() - mcqStartTime) / 1000); // Calculate seconds taken
             document.getElementById('quiz-final-student').innerText = `${mcqStudentInfo.name} | ${mcqStudentInfo.section}-${seatFormatted}`;
             document.getElementById('quiz-final-score').innerText = `${mcqScore}/${mcqQuestions.length}`;
             if (window.saveToLeaderboardDB) {
-                window.saveToLeaderboardDB(mcqStudentInfo.name, mcqStudentInfo.section, seatFormatted, mcqScore, mcqQuestions.length, 'mcq');
+                window.saveToLeaderboardDB(mcqStudentInfo.name, mcqStudentInfo.section, seatFormatted, mcqScore, mcqQuestions.length, timeTaken, 'mcq');
             }
         }
 
@@ -1141,6 +1162,8 @@
         let voiceCurrentIndex = 0;
         let voiceScore = 0;
         let voiceStudentInfo = {};
+        let voiceStartTime = 0;
+        let voiceTimerInterval;
         
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition = null;
@@ -1215,6 +1238,15 @@
             voiceQuestions = shuffle([...vocabData]);
             voiceCurrentIndex = 0;
             voiceScore = 0;
+            voiceStartTime = Date.now(); // Start the stopwatch
+            
+            clearInterval(voiceTimerInterval);
+            document.getElementById('voice-timer-text').innerHTML = '<i class="fa-solid fa-stopwatch mr-1"></i>00:00';
+            voiceTimerInterval = setInterval(() => {
+                let s = Math.floor((Date.now() - voiceStartTime) / 1000);
+                document.getElementById('voice-timer-text').innerHTML = `<i class="fa-solid fa-stopwatch mr-1"></i>${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+            }, 1000);
+
             const seatFormatted = voiceStudentInfo.seat.toString().padStart(2, '0');
             document.getElementById('voice-student-info').innerText = `${voiceStudentInfo.section}-${seatFormatted} ${voiceStudentInfo.name}`;
             loadVoice();
@@ -1240,13 +1272,28 @@
             try { recognition.start(); } catch(e) { /* catch if already started */ }
             
             recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript.toLowerCase().replace(/[.,!?]/g, '');
-                const target = voiceQuestions[voiceCurrentIndex].en.toLowerCase().replace(/[.,!?]/g, '');
+                const transcript = event.results[0][0].transcript.toLowerCase().replace(/[.,!?]/g, '').trim();
+                const target = voiceQuestions[voiceCurrentIndex].en.toLowerCase().replace(/[.,!?]/g, '').trim();
                 
                 document.getElementById('btn-mic').classList.remove('animate-pulse', '!bg-red-500');
                 
-                // Allow a pass if they speak the main target word correctly amidst other words
+                let isMatch = false;
+
+                // 1. Standard Match Check
                 if (transcript.includes(target) || target.includes(transcript) || transcript === target) {
+                    isMatch = true;
+                } else {
+                    // 2. Leniency Check for difficult, short words the browser misinterprets
+                    const leniencyMap = {
+                        'oil': ['all', 'owl', 'isle', 'i\'ll', 'oh well', 'old', 'boil', 'boyle', 'al', 'oy', 'ohio'],
+                        'coal': ['cold', 'call', 'cole', 'cool', 'coke', 'goal', 'hole', 'bowl', 'cow', 'kohl']
+                    };
+                    if (leniencyMap[target]) {
+                        isMatch = leniencyMap[target].some(alt => transcript.includes(alt));
+                    }
+                }
+
+                if (isMatch) {
                     playSfx('match');
                     document.getElementById('voice-feedback').innerText = `Heard: "${transcript}" - CORRECT!`;
                     document.getElementById('voice-feedback').className = "text-sm font-bold text-green-600 mb-2 h-5 text-center";
@@ -1272,15 +1319,17 @@
         }
 
         function endVoice() {
+            clearInterval(voiceTimerInterval);
             playSfx('win');
             confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
             document.getElementById('voice-active-panel').classList.add('hidden');
             document.getElementById('voice-result-panel').classList.remove('hidden');
             const seatFormatted = voiceStudentInfo.seat.toString().padStart(2, '0');
+            const timeTaken = Math.floor((Date.now() - voiceStartTime) / 1000); // Calculate seconds taken
             document.getElementById('voice-final-student').innerText = `${voiceStudentInfo.name} | ${voiceStudentInfo.section}-${seatFormatted}`;
             document.getElementById('voice-final-score').innerText = `${voiceScore}/${voiceQuestions.length}`;
             if (window.saveToLeaderboardDB) {
-                window.saveToLeaderboardDB(voiceStudentInfo.name, voiceStudentInfo.section, seatFormatted, voiceScore, voiceQuestions.length, 'voice');
+                window.saveToLeaderboardDB(voiceStudentInfo.name, voiceStudentInfo.section, seatFormatted, voiceScore, voiceQuestions.length, timeTaken, 'voice');
             }
         }
 
@@ -1325,18 +1374,18 @@
                 const displayName = (entry.name || "").trim();
                 
                 if (entry.quizType === 'mcq') {
-                    if (!mcqMap[studentKey] || entry.score > mcqMap[studentKey].score || (entry.score === mcqMap[studentKey].score && entry.date > mcqMap[studentKey].date)) {
+                    if (!mcqMap[studentKey] || entry.score > mcqMap[studentKey].score || (entry.score === mcqMap[studentKey].score && entry.duration < mcqMap[studentKey].duration)) {
                         mcqMap[studentKey] = { ...entry, name: displayName };
                     }
                 } else if (entry.quizType === 'voice') {
-                    if (!voiceMap[studentKey] || entry.score > voiceMap[studentKey].score || (entry.score === voiceMap[studentKey].score && entry.date > voiceMap[studentKey].date)) {
+                    if (!voiceMap[studentKey] || entry.score > voiceMap[studentKey].score || (entry.score === voiceMap[studentKey].score && entry.duration < voiceMap[studentKey].duration)) {
                         voiceMap[studentKey] = { ...entry, name: displayName };
                     }
                 }
             });
             
-            let mcqBoard = Object.values(mcqMap).sort((a, b) => b.score - a.score || b.date - a.date);
-            let voiceBoard = Object.values(voiceMap).sort((a, b) => b.score - a.score || b.date - a.date);
+            let mcqBoard = Object.values(mcqMap).sort((a, b) => b.score - a.score || a.duration - b.duration || a.date - b.date);
+            let voiceBoard = Object.values(voiceMap).sort((a, b) => b.score - a.score || a.duration - b.duration || a.date - b.date);
 
             const renderList = (data, container, maxScore, colorClass) => {
                 if (data.length === 0) {
@@ -1349,6 +1398,7 @@
                     const medalColors = ['text-yellow-400', 'text-slate-300', 'text-amber-600'];
                     const rankIcon = isTop3 ? `<i class="fa-solid fa-medal ${medalColors[index]} text-2xl drop-shadow-md"></i>` : `<span class="text-slate-400 font-black w-6 text-center text-lg">${index + 1}</span>`;
                     const displayId = `${entry.section}-${entry.seat}`;
+                    const timeBadge = entry.duration < 999999 ? `<div class="text-[10px] text-slate-400 font-bold mt-1 text-right bg-slate-100/50 rounded px-1.5 py-0.5"><i class="fa-regular fa-clock"></i> ${entry.duration}s</div>` : '';
 
                     const item = document.createElement('div');
                     item.className = `flex justify-between items-center p-3 rounded-xl transition-all ${isTop3 ? 'bg-gradient-to-r from-slate-50 to-white border-2 border-slate-200 shadow-sm scale-[1.01]' : 'bg-white/50 border border-transparent'}`;
@@ -1360,8 +1410,11 @@
                                 <div class="text-[10px] sm:text-xs text-slate-500 font-bold tracking-wider">${displayId}</div>
                             </div>
                         </div>
-                        <div class="font-black ${entry.score === maxScore ? 'text-green-500' : colorClass} text-xl drop-shadow-sm flex-none">
-                            ${entry.score}<span class="text-xs text-slate-400 ml-1">/${maxScore}</span>
+                        <div class="flex flex-col items-end flex-none">
+                            <div class="font-black ${entry.score === maxScore ? 'text-green-500' : colorClass} text-xl drop-shadow-sm leading-none">
+                                ${entry.score}<span class="text-xs text-slate-400 ml-1">/${maxScore}</span>
+                            </div>
+                            ${timeBadge}
                         </div>
                     `;
                     container.appendChild(item);
