@@ -655,13 +655,14 @@
     <script>
         // --- DATA ---
         const vocabData = [
+            { en: "Renewable energy", img: "images/renewable_energy.png", category: "badge-bio", syllables: "Re·new·a·ble en·er·gy" },
             { en: "Solar energy", img: "images/solar_energy.png", category: "badge-solar", syllables: "So·lar en·er·gy" },
             { en: "Wind energy", img: "images/wind_energy.png", category: "badge-wind", syllables: "Wind en·er·gy" },
             { en: "Hydropower", img: "images/hydropower.png", category: "badge-hydro", syllables: "Hy·dro·pow·er" },
             { en: "Geothermal energy", img: "images/geothermal_energy.png", category: "badge-geo", syllables: "Ge·o·ther·mal en·er·gy" },
             { en: "Biomass energy", img: "images/biomass_energy.png", category: "badge-bio", syllables: "Bi·o·mass en·er·gy" },
             { en: "Non-renewable resource", img: "images/non_renewable_resource.png", category: "badge-fossil", syllables: "Non-re·new·a·ble re·source" },
-            { en: "Fossil fuels", img: "images/fossil_fuels.png", category: "badge-fossil", syllables: "Fos·sil fu·els" },
+            { en: "Fossil fuels", img: "images/fossil_fuels.png?v=2", category: "badge-fossil", syllables: "Fos·sil fu·els" },
             { en: "Coal", img: "images/coal.png", category: "badge-fossil", syllables: "Coal" },
             { en: "Oil", img: "images/oil.png", category: "badge-fossil", syllables: "Oil" },
             { en: "Natural gas", img: "images/natural_gas.png", category: "badge-fossil", syllables: "Nat·u·ral gas" },
@@ -1285,11 +1286,12 @@
                 } else {
                     // 2. Leniency Check for difficult, short words the browser misinterprets
                     const leniencyMap = {
-                        'oil': ['all', 'owl', 'isle', 'i\'ll', 'oh well', 'old', 'boil', 'boyle', 'al', 'oy', 'ohio'],
-                        'coal': ['cold', 'call', 'cole', 'cool', 'coke', 'goal', 'hole', 'bowl', 'cow', 'kohl']
+                        'oil': ['all', 'owl', 'isle', 'i\'ll', 'oh well', 'old', 'boil', 'boyle', 'al', 'oy', 'ohio', 'oh', 'o', 'boy', 'toy', 'foil', 'soil', 'toil', 'awe', 'owe', 'hole', 'whole', 'earl', 'url', 'are'],
+                        'coal': ['cold', 'call', 'cole', 'cool', 'coke', 'goal', 'hole', 'bowl', 'cow', 'kohl', 'go', 'code', 'coat', 'core', 'corn', 'comb', 'clone', 'close', 'cope', 'col', 'cove', 'gold', 'toll', 'pole', 'pull']
                     };
                     if (leniencyMap[target]) {
-                        isMatch = leniencyMap[target].some(alt => transcript.includes(alt));
+                        // Check if any of the lenient words are in the transcript
+                        isMatch = leniencyMap[target].some(alt => transcript.includes(alt) || transcript === alt);
                     }
                 }
 
