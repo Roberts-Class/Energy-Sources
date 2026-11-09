@@ -1376,11 +1376,12 @@
             const uniqueStudents = new Set(); // For the total players counter
 
             board.forEach(entry => {
-                const normalizedName = (entry.name || "").trim().toUpperCase();
-                const cleanSection = String(entry.section).trim();
-                const cleanSeat = String(entry.seat).trim();
+                // FIX: Force EVERYTHING to be a string before trimming, in case a student entered a pure number as their name!
+                const normalizedName = String(entry.name || "").trim().toUpperCase();
+                const cleanSection = String(entry.section || "").trim();
+                const cleanSeat = String(entry.seat || "").trim();
                 const studentKey = `${cleanSection}-${cleanSeat}-${normalizedName}`;
-                const displayName = (entry.name || "").trim();
+                const displayName = String(entry.name || "").trim();
                 
                 uniqueStudents.add(studentKey); // Count unique participants
                 
