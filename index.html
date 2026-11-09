@@ -554,16 +554,19 @@
                 </button>
             </div>
             
-            <div class="flex w-full max-w-md mb-3 flex-none relative">
-                <select id="ranking-filter" onchange="renderRanking()" class="w-full p-3 rounded-xl text-xs sm:text-sm bg-slate-50 text-slate-700 font-bold border-2 border-slate-200 outline-none focus:border-purple-500 shadow-inner appearance-none cursor-pointer">
-                    <option value="ALL">All Classes (Filter)</option>
-                    <option value="801">Class 801</option>
-                    <option value="802">Class 802</option>
-                    <option value="803">Class 803</option>
-                    <option value="804">Class 804</option>
-                    <option value="805">Class 805</option>
-                </select>
-                <i class="fa-solid fa-caret-down absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+            <div class="flex w-full max-w-md mb-3 flex-none relative items-center gap-2">
+                <div class="relative w-full">
+                    <select id="ranking-filter" onchange="renderRanking()" class="w-full p-3 rounded-xl text-xs sm:text-sm bg-slate-50 text-slate-700 font-bold border-2 border-slate-200 outline-none focus:border-purple-500 shadow-inner appearance-none cursor-pointer">
+                        <option value="ALL">All Classes (Filter)</option>
+                        <option value="801">Class 801</option>
+                        <option value="802">Class 802</option>
+                        <option value="803">Class 803</option>
+                        <option value="804">Class 804</option>
+                        <option value="805">Class 805</option>
+                    </select>
+                    <i class="fa-solid fa-caret-down absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                </div>
+                <span id="ranking-total-badge" class="hidden whitespace-nowrap bg-blue-100 text-blue-700 border border-blue-200 px-3 py-2 rounded-xl text-xs font-black shadow-sm uppercase tracking-wider"></span>
             </div>
             
             <div class="flex-grow w-full grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto md:overflow-hidden pb-4">
@@ -1357,48 +1360,61 @@
             const listMCQ = document.getElementById('ranking-list-mcq');
             const listVoice = document.getElementById('ranking-list-voice');
             const filter = document.getElementById('ranking-filter').value;
+            const totalBadge = document.getElementById('ranking-total-badge');
+            
             listMCQ.innerHTML = '';
             listVoice.innerHTML = '';
             
             let board = window.leaderboardData ? [...window.leaderboardData] : [];
             
             if (filter !== "ALL") {
-                board = board.filter(entry => entry.section === filter);
+                board = board.filter(entry => String(entry.section).trim() === filter);
             }
             
             const mcqMap = {};
             const voiceMap = {};
+            const uniqueStudents = new Set(); // For the total players counter
 
             board.forEach(entry => {
-                // Normalize name to upper case to group variants like "ROBERT" and "Robert"
                 const normalizedName = (entry.name || "").trim().toUpperCase();
-                const studentKey = `${entry.section}-${entry.seat}-${normalizedName}`;
+                const cleanSection = String(entry.section).trim();
+                const cleanSeat = String(entry.seat).trim();
+                const studentKey = `${cleanSection}-${cleanSeat}-${normalizedName}`;
                 const displayName = (entry.name || "").trim();
                 
+                uniqueStudents.add(studentKey); // Count unique participants
+                
+                let currentScore = Number(entry.score) || 0;
+                let currentDuration = Number(entry.duration) || 999999;
+                
                 if (entry.quizType === 'mcq') {
-                    if (!mcqMap[studentKey] || entry.score > mcqMap[studentKey].score || (entry.score === mcqMap[studentKey].score && entry.duration < mcqMap[studentKey].duration)) {
-                        mcqMap[studentKey] = { ...entry, name: displayName };
+                    if (!mcqMap[studentKey] || currentScore > mcqMap[studentKey].score || (currentScore === mcqMap[studentKey].score && currentDuration < mcqMap[studentKey].duration)) {
+                        mcqMap[studentKey] = { ...entry, name: displayName, score: currentScore, duration: currentDuration };
                     }
                 } else if (entry.quizType === 'voice') {
-                    if (!voiceMap[studentKey] || entry.score > voiceMap[studentKey].score || (entry.score === voiceMap[studentKey].score && entry.duration < voiceMap[studentKey].duration)) {
-                        voiceMap[studentKey] = { ...entry, name: displayName };
+                    if (!voiceMap[studentKey] || currentScore > voiceMap[studentKey].score || (currentScore === voiceMap[studentKey].score && currentDuration < voiceMap[studentKey].duration)) {
+                        voiceMap[studentKey] = { ...entry, name: displayName, score: currentScore, duration: currentDuration };
                     }
                 }
             });
             
-            // 1. Highest Score wins
-            // 2. If tied, Lowest Duration (fastest time) wins
-            // 3. If still tied, Earliest Date of submission wins (with safety fallback for older scores)
+            // Update total badge
+            if (totalBadge) {
+                totalBadge.classList.remove('hidden');
+                totalBadge.innerText = `${uniqueStudents.size} Player${uniqueStudents.size !== 1 ? 's' : ''}`;
+            }
+            
+            // Sort arrays safely using numbers
             let mcqBoard = Object.values(mcqMap).sort((a, b) => {
-                if (b.score !== a.score) return (b.score || 0) - (a.score || 0); 
-                if (a.duration !== b.duration) return (a.duration || 999999) - (b.duration || 999999); 
-                return (a.date || 0) - (b.date || 0); 
+                if (b.score !== a.score) return b.score - a.score; 
+                if (a.duration !== b.duration) return a.duration - b.duration; 
+                return (Number(a.date) || 0) - (Number(b.date) || 0); 
             });
             
             let voiceBoard = Object.values(voiceMap).sort((a, b) => {
-                if (b.score !== a.score) return (b.score || 0) - (a.score || 0);
-                if (a.duration !== b.duration) return (a.duration || 999999) - (b.duration || 999999);
-                return (a.date || 0) - (b.date || 0);
+                if (b.score !== a.score) return b.score - a.score;
+                if (a.duration !== b.duration) return a.duration - b.duration;
+                return (Number(a.date) || 0) - (Number(b.date) || 0);
             });
 
             const renderList = (data, container, maxScore, colorClass) => {
@@ -1412,7 +1428,7 @@
                     const medalColors = ['text-yellow-400', 'text-slate-300', 'text-amber-600'];
                     const rankIcon = isTop3 ? `<i class="fa-solid fa-medal ${medalColors[index]} text-2xl drop-shadow-md"></i>` : `<span class="text-slate-400 font-black w-6 text-center text-lg">${index + 1}</span>`;
                     const displayId = `${entry.section}-${entry.seat}`;
-                    const timeBadge = entry.duration < 999999 ? `<div class="text-[10px] text-slate-500 font-bold mt-1 text-right bg-slate-200/50 rounded px-1.5 py-0.5 flex items-center justify-end gap-1"><i class="fa-solid fa-stopwatch text-slate-400"></i> ${entry.duration} sec</div>` : '';
+                    const timeBadge = entry.duration < 999999 ? `<div class="text-[10px] text-slate-500 font-bold mt-1 text-right bg-slate-200/50 rounded px-1.5 py-0.5 flex items-center justify-end gap-1"><i class="fa-solid fa-stopwatch text-slate-400"></i> ${entry.duration}s</div>` : '';
 
                     const item = document.createElement('div');
                     item.className = `flex justify-between items-center p-3 rounded-xl transition-all ${isTop3 ? 'bg-gradient-to-r from-slate-50 to-white border-2 border-slate-200 shadow-sm scale-[1.01]' : 'bg-white/50 border border-transparent'}`;
@@ -1425,7 +1441,7 @@
                             </div>
                         </div>
                         <div class="flex flex-col items-end flex-none">
-                            <div class="font-black ${entry.score === maxScore ? 'text-green-500' : colorClass} text-xl drop-shadow-sm leading-none">
+                            <div class="font-black ${entry.score >= 15 ? 'text-green-500' : colorClass} text-xl drop-shadow-sm leading-none">
                                 ${entry.score}<span class="text-xs text-slate-400 ml-1">/${maxScore}</span>
                             </div>
                             ${timeBadge}
